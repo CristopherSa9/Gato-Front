@@ -15,16 +15,14 @@
     </div>
     <div class="message">
       <p>{{ message }}</p>
-      <button @click="startNewGame">Reiniciar</button>
-      <div style="margin-top: 10px"></div>
-      <button @click="startGame">Nuevo juego</button>
+      <button @click="startGame">Nuevo Juego</button>
+      <button @click="restartGame">Reiniciar Juego</button>
     </div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
-
 export default {
   data() {
     return {
@@ -33,14 +31,69 @@ export default {
         ["", "", ""],
         ["", "", ""],
       ],
-      currentPlayer: "X",
+      ID_Game: null,
+      Player: null,
       message: "",
-      apiBaseUrl: "https://46i3aj7hn3.execute-api.us-east-1.amazonaws.com",
-      currentGameId: null,
+      apiBaseUrl: "https://46i3aj7hn3.execute-api.us-east-1.amazonaws.com", // Cambia a la URL de tu API
     };
   },
   methods: {
-    // Tus métodos aquí
+    makeMove(rowIndex, colIndex) {
+      if (this.ID_Game != null) {
+        axios
+          .get(`${this.apiBaseUrl}/game/${this.ID_Game}`)
+          .then((response) => {
+            console.log(response.data["Game"]);
+          });
+
+        const move = {
+          row: rowIndex.toString(), // Convierte los índices en cadenas si es necesario
+          col: colIndex.toString()
+        };
+        axios
+          .put(`${this.apiBaseUrl}/makeMove/${this.ID_Game}`, move)
+          .then((response) => {
+            console.log(response.data);
+            if (response.data["Valido"] === "Movimiento valido.") {
+              this.board[rowIndex][colIndex] = "X"
+              
+            }
+          });
+        
+      } else {
+        alert("Inicia un juego primero");
+      }
+    },
+    startGame() {
+      axios
+        .get(`${this.apiBaseUrl}/get-id`)
+        .then((response) => {
+          this.ID_Game = response.data["New Game"];
+        })
+        .then(() => {
+          axios
+            .put(`${this.apiBaseUrl}/game/${this.ID_Game}`)
+            .then((response) => {
+              console.log(response.data)
+              alert(`Juego iniciado.`)
+            });
+        });
+    },
+    restartGame(){
+      axios
+      .put(`${this.apiBaseUrl}/resetGame/${this.ID_Game}`)
+      .then((response)=> {
+        if (response.data["Valido"] == "Juego reiniciado") {
+          this.board = [
+              ["", "", ""],
+              ["", "", ""],
+              ["", "", ""],
+            ];
+          alert("Juego reiniciado")
+          
+        }
+      })
+    }
   },
 };
 </script>
@@ -85,10 +138,10 @@ button {
   border: none;
   cursor: pointer;
   margin-top: 10px;
+  margin-left: 10px;
 }
 
 button:hover {
   background-color: #0056b3;
-  transition: background-color 0.3s ease;
 }
 </style>
