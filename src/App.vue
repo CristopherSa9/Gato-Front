@@ -36,7 +36,7 @@ export default {
       currentPlayer: "X",
       message: "",
       apiBaseUrl: "https://0h2kov0us3.execute-api.us-east-1.amazonaws.com",
-      currentGameId: null,
+      currentGameId: 1,
     };
   },
   methods: {
@@ -117,7 +117,61 @@ export default {
             // Agregar manejo de errores adicional según sea necesario
           });
       }
-    }
+    },
+    isGameOver() {
+      // Verificar si hay un ganador en filas, columnas o diagonales
+      for (let i = 0; i < 3; i++) {
+        // Verificar filas
+        if (
+          this.board[i][0] === this.board[i][1] &&
+          this.board[i][1] === this.board[i][2] &&
+          this.board[i][0] !== ""
+        ) {
+          return true; // Hay un ganador en esta fila
+        }
+
+        // Verificar columnas
+        if (
+          this.board[0][i] === this.board[1][i] &&
+          this.board[1][i] === this.board[2][i] &&
+          this.board[0][i] !== ""
+        ) {
+          return true; // Hay un ganador en esta columna
+        }
+      }
+
+      // Verificar diagonales
+      if (
+        (this.board[0][0] === this.board[1][1] &&
+          this.board[1][1] === this.board[2][2]) ||
+        (this.board[0][2] === this.board[1][1] &&
+          this.board[1][1] === this.board[2][0])
+      ) {
+        if (this.board[1][1] !== "") {
+          return true; // Hay un ganador en una diagonal
+        }
+      }
+
+      // Si el tablero está lleno y no hay ganador, es un empate
+      if (this.isBoardFull()) {
+        return true; // El juego está empatado
+      }
+
+      // Si no hay ganador y el tablero no está lleno, el juego no ha terminado
+      return false;
+    },
+    isBoardFull() {
+      // Verificar si todas las celdas del tablero están ocupadas
+      for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+          if (this.board[row][col] === "") {
+            return false; // Hay al menos una celda vacía, el tablero no está lleno
+          }
+        }
+      }
+      return true; // Todas las celdas están ocupadas, el tablero está lleno
+    },
+    // ... otros métodos
   },
 };
 </script>
